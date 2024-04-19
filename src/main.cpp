@@ -152,13 +152,13 @@ void loop()
       Serial.print("Clockwise ");
       Serial.println(numbers[5]);
       enableMotors();
-      move(clockwise, abs(numbers[5]));
+      turn(clockwise, abs(numbers[5]));
       delay(waitTime);
     }else if (numbers[5]<0){
       Serial.print("Counterclockwise ");
       Serial.println(numbers[5]);
       enableMotors();
-      move(counterClockwise, abs(numbers[5]));
+      turn(counterClockwise, abs(numbers[5]));
       delay(waitTime);
     }else{
       Serial.println("Stopped");
