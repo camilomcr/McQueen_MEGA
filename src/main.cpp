@@ -8,7 +8,7 @@ const int pinBIN2 = 7;
 const int pinPWMB = 8;
 const int pinSTBY = 5;
 
-const int waitTime = 2000; 
+const int waitTime = 250; 
 const int speed = 80;  // 0-255
 
 const int pinMotorA[3] = { pinPWMA, pinAIN2, pinAIN1 };
@@ -98,6 +98,21 @@ void fullStop()
 }
 
 
+void splitStringToInt(String str, char delimiter, int numbers[], int& count) {
+    int idx = 0;
+    int start = 0;
+    int len = str.length();
+    count = 0; // This will count how many numbers we have
+
+    while (idx >= 0 && idx < len) {
+        idx = str.indexOf(delimiter, start);
+        String part = (idx >= 0) ? str.substring(start, idx) : str.substring(start, len);
+        numbers[count++] = part.toInt(); // Convert the substring to an integer and store it
+        start = idx + 1; // Move start up past the delimiter
+    }
+}
+
+
 void setup()
 { Serial.begin(9600);
   pinMode(pinAIN2, OUTPUT);
@@ -106,25 +121,49 @@ void setup()
   pinMode(pinBIN1, OUTPUT);
   pinMode(pinBIN2, OUTPUT);
   pinMode(pinPWMB, OUTPUT);
-
+  
   enableMotors();
   move(forward, speed);
   delay(waitTime);
-
-  move(backward, speed);
-  delay(waitTime);
-
-  turn(clockwise, speed);
-  delay(waitTime);
-
-  turn(counterClockwise, speed);
-  delay(waitTime);
-
   fullStop();
   delay(waitTime);
 }
 
 void loop()
 {
-  
+  if (Serial.available() > 0) {
+    int numbers[6]; // Array to hold the split numbers
+    String data = Serial.readStringUntil('\n');
+    int count = 0; // Number of parts split
+    splitStringToInt(data, ',', numbers, count);
+    if (numbers[0]>0){
+      Serial.print("Forward ");
+      Serial.println(numbers[0]);
+      enableMotors();
+      move(forward, abs(numbers[0]));
+      delay(waitTime);
+    }else if (numbers[0]<0){
+      Serial.print("backwards ");
+      Serial.println(numbers[0]);
+      enableMotors();
+      move(backward, abs(numbers[0]));
+      delay(waitTime);
+    }else if (numbers[5]>0){
+      Serial.print("Clockwise ");
+      Serial.println(numbers[5]);
+      enableMotors();
+      move(clockwise, abs(numbers[5]));
+      delay(waitTime);
+    }else if (numbers[5]<0){
+      Serial.print("Counterclockwise ");
+      Serial.println(numbers[5]);
+      enableMotors();
+      move(counterClockwise, abs(numbers[5]));
+      delay(waitTime);
+    }else{
+      Serial.println("Stopped");
+      fullStop();
+      delay(waitTime);
+    }
+  }
 }
